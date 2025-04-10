@@ -1,0 +1,196 @@
+[
+    {
+        "id": "a4f2d323f67fa56d",
+        "type": "tab",
+        "label": "CH-02",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "66f53189b25af2fb",
+        "type": "csv",
+        "z": "a4f2d323f67fa56d",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 430,
+        "y": 180,
+        "wires": [
+            [
+                "46bcb28c2d22e0fb",
+                "4221712883056967"
+            ]
+        ]
+    },
+    {
+        "id": "b52f5bcf8405d8d6",
+        "type": "file in",
+        "z": "a4f2d323f67fa56d",
+        "name": "read dataset",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 02\\crop_yield.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 270,
+        "y": 180,
+        "wires": [
+            [
+                "66f53189b25af2fb"
+            ]
+        ]
+    },
+    {
+        "id": "af4eb77ba28055d8",
+        "type": "inject",
+        "z": "a4f2d323f67fa56d",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 180,
+        "wires": [
+            [
+                "b52f5bcf8405d8d6"
+            ]
+        ]
+    },
+    {
+        "id": "46bcb28c2d22e0fb",
+        "type": "function",
+        "z": "a4f2d323f67fa56d",
+        "name": "direct coefficients",
+        "func": "let area = [];\nlet prod = [];\nlet rain = [];\nlet fert = [];\n\nlet pest = [];\nlet yieldValue = [];\n\nlet ypred = [];\n\nmsg.payload.forEach(row => {\n    area.push(row['Area']);\n    prod.push(row['Production']);\n    rain.push(row['Annual_Rainfall']);\n    fert.push(row['Fertilizer']);\n    pest.push(row['Pesticide']);\n    yieldValue.push(row['Yield']);\n});\n\nlet b0 = -71.05;\nlet b1 = 0.0020;\nlet b2 = 0.1977;\nlet b3 = 0.1008;\nlet b4 = 0.0101;\nlet b5 = 0.0010;\n\nfor (let i = 0; i < area.length; i++) {\n    ypred[i] = b0 +\n        b1 * area[i] +\n        b2 * prod[i] +\n        b3 * rain[i] +\n        b4 * fert[i] +\n        b5 * pest[i]\n}\n\nmsg.payload = {\n    ypred\n};\n\nreturn msg; ",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 180,
+        "wires": [
+            [
+                "2b7b0a8b9a4aaece"
+            ]
+        ]
+    },
+    {
+        "id": "2b7b0a8b9a4aaece",
+        "type": "debug",
+        "z": "a4f2d323f67fa56d",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "4221712883056967",
+        "type": "function",
+        "z": "a4f2d323f67fa56d",
+        "name": "mutiple regression ",
+        "func": "let area = [];\nlet prod = [];\nlet rain = [];\nlet fert = [];\nlet pest = [];\nlet yieldValue = [];\n\nmsg.payload.forEach(row => {\n    area.push(row['Area']);\n    prod.push(row['Production']);\n    rain.push(row['Annual_Rainfall']);\n    fert.push(row['Fertilizer']);\n    pest.push(row['Pesticide']);\n    yieldValue.push(row['Yield']);\n});\n\nconst n = area.length;\nconst meanArea = area.reduce((a, b) => a + b, 0) / n;\nconst meanProd = prod.reduce((a, b) => a + b, 0) / n;\nconst meanRain = rain.reduce((a, b) => a + b, 0) / n;\nconst meanFert = fert.reduce((a, b) => a + b, 0) / n;\nconst meanPest = pest.reduce((a, b) => a + b, 0) / n;\nconst meanYeild = yieldValue.reduce((a, b) => a + b, 0) / n;\n\nlet num = 0;\nlet den = 0;\n\nfor (let i = 0; i < n; i++) {\n    num += (area[i] - meanArea) * (yieldValue[i] - meanYeild);\n    den += Math.pow(area[i] - meanArea, 2);\n}\n\nlet b1 = num / den;\n\nnum = 0;\nden = 0;\n\nfor (let i = 0; i < n; i++) {\n    num += (prod[i] - meanProd) * (yieldValue[i] - meanYeild);\n    den += Math.pow(prod[i] - meanProd, 2);\n}\n\nlet b2 = num / den;\n\nnum = 0;\nden = 0; \n\nfor (let i = 0; i < n; i++) {\n    num += (rain[i] - meanRain) * (yieldValue[i] - meanYeild);\n    den += Math.pow(rain[i] - meanRain, 2);\n}\n\nlet b3 = num / den;\n\nnum = 0;\nden = 0;\n\nfor (let i = 0; i < n; i++) {\n    num += (fert[i] - meanFert) * (yieldValue[i] - meanYeild);\n    den += Math.pow(fert[i] - meanFert, 2);\n}\n\nlet b4 = num / den;\n\nnum = 0;\nden = 0;\n\nfor (let i = 0; i < n; i++) {\n    num += (pest[i] - meanPest) * (yieldValue[i] - meanYeild);\n    den += Math.pow(pest[i] - meanPest, 2);\n}\n\nlet b5 = num / den;\n\nlet b0 = meanYeild - b1 * meanArea - b2 * meanProd - b3 * meanRain - b4 *\n    meanFert - b5 * meanPest;\n\nmsg.payload = {\n    b0: b0,\n    b1: b1,\n    b2: b2,\n    b3: b3,\n    b4: b4,\n    b5: b5\n};\n\nreturn msg; ",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 260,
+        "wires": [
+            [
+                "fcc7d0fe3658cf8c",
+                "c2ed0ac7a1a36704"
+            ]
+        ]
+    },
+    {
+        "id": "fcc7d0fe3658cf8c",
+        "type": "debug",
+        "z": "a4f2d323f67fa56d",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "c2ed0ac7a1a36704",
+        "type": "function",
+        "z": "a4f2d323f67fa56d",
+        "name": "prediction",
+        "func": "let prediction = msg.payload.b0 +\n    msg.payload.b1 * 6637 +\n    msg.payload.b2 * 9073 +\n    msg.payload.b3 * 1356.2 +\n    msg.payload.b4 * 943515.38 +\n    msg.payload.b5 * 86580.52 \n\nmsg.payload = { prediction };\nreturn msg; ",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 340,
+        "wires": [
+            [
+                "9e4870697c11ef57"
+            ]
+        ]
+    },
+    {
+        "id": "9e4870697c11ef57",
+        "type": "debug",
+        "z": "a4f2d323f67fa56d",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 340,
+        "wires": []
+    }
+]

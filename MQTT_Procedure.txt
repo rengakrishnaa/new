@@ -1,0 +1,12 @@
+PROCEDURE:
+hardware:
+1) connect HW-827 to Rapberry pi
+	vcc – pin 2 (5v)
+	gnd – gnd
+	signal – GPIO17 (PIN 11)
+2) Set mqtt nodes in node-red(publisher adn broker)
+3) create function node
+4) dashboard node
+
+components:
+pulse oxiometer,raspberry pi ,jump wires

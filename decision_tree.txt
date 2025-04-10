@@ -1,0 +1,336 @@
+[ 
+{ 
+"id": "47a34765e588b147", 
+"type": "tab", 
+"label": "Flow 2", 
+"disabled": false, 
+"info": "", 
+"env": [] 
+}, 
+{ 
+"id": "cb118b8ef4281797", 
+"type": "inject", 
+"z": "47a34765e588b147", 
+"name": "Input Inject", 
+"props": [ 
+{ 
+"p": "payload" 
+}, 
+{ 
+"p": "topic", 
+"vt": "str" 
+} 
+], 
+"repeat": "", 
+"crontab": "", 
+"once": false, 
+"onceDelay": 0.1, 
+"topic": "", 
+"payload": "", 
+"payloadType": "date", 
+"x": 460, 
+"y": 60, 
+"wires": [ 
+[ 
+"8e4e9ed52cfeebf5" 
+] 
+] 
+}, 
+{ 
+"id": "1e16c409dc89bdc3", 
+"type": "debug", 
+"z": "47a34765e588b147", 
+"name": "Debug Print", 
+"active": true, 
+"tosidebar": true, 
+"console": false, 
+"tostatus": false, 
+"complete": "payload", 
+"targetType": "msg", 
+"statusVal": "", 
+"statusType": "auto", 
+"x": 1210, 
+"y": 60, 
+"wires": [] 
+}, 
+{ 
+"id": "dc0e45d2cca5fb0a", 
+"type": "inject", 
+"z": "47a34765e588b147", 
+"name": "Input Inject", 
+"props": [ 
+{ 
+"p": "payload" 
+}, 
+{ 
+"p": "topic", 
+"vt": "str" 
+} 
+], 
+"repeat": "", 
+"crontab": "", 
+"once": false, 
+"onceDelay": 0.1, 
+"topic": "", 
+"payload": "", 
+"payloadType": "date", 
+"x": 200, 
+"y": 280, 
+"wires": [ 
+[ 
+"86b689b18fcb0f21" 
+] 
+] 
+}, 
+{ 
+"id": "109b2f1fb1b441b1", 
+"type": "debug", 
+"z": "47a34765e588b147", 
+"name": "Error Debug ", 
+"active": true, 
+"tosidebar": true, 
+"console": false, 
+"tostatus": false, 
+"complete": "payload", 
+"targetType": "msg", 
+"statusVal": "", 
+"statusType": "auto", 
+"x": 1210, 
+"y": 280, 
+"wires": [] 
+}, 
+{ 
+"id": "fa849d7bd14e5596", 
+"type": "debug", 
+"z": "47a34765e588b147", 
+"name": "Print Debug", 
+"active": true, 
+"tosidebar": true, 
+"console": false, 
+"tostatus": false, 
+"complete": "payload", 
+"targetType": "msg", 
+"statusVal": "", 
+"statusType": "auto", 
+"x": 1210, 
+"y": 160, 
+"wires": [] 
+}, 
+{ 
+"id": "da38ee32977db952", 
+"type": "inject", 
+"z": "47a34765e588b147", 
+"name": "Input Inject", 
+"props": [ 
+{ 
+"p": "payload" 
+}, 
+{ 
+"p": "topic", 
+"vt": "str" 
+} 
+], 
+"repeat": "", 
+"crontab": "", 
+"once": false, 
+"onceDelay": 0.1, 
+"topic": "", 
+"payload": "", 
+"payloadType": "date", 
+"x": 200, 
+"y": 440, 
+"wires": [ 
+[ 
+"603be35307aa54c0", 
+"d1e24c1b9164f594" 
+] 
+] 
+}, 
+{ 
+"id": "9fa716700db0457c", 
+"type": "debug", 
+"z": "47a34765e588b147", 
+"name": "Error Debug ", 
+"active": true, 
+"tosidebar": true, 
+"console": false, 
+"tostatus": false, 
+"complete": "payload", 
+"targetType": "msg", 
+"statusVal": "", 
+"statusType": "auto", 
+"x": 1210, 
+"y": 540, 
+"wires": [] 
+}, 
+{ 
+"id": "e23fe081cab4b8ba", 
+"type": "debug", 
+"z": "47a34765e588b147", 
+"name": "Debug Print", 
+"active": true, 
+"tosidebar": true, 
+"console": false, 
+"tostatus": false, 
+"complete": "payload", 
+"targetType": "msg", 
+"statusVal": "", 
+"statusType": "auto", 
+"x": 1210, 
+"y": 420, 
+"wires": [] 
+}, 
+{ 
+"id": "8e4e9ed52cfeebf5", 
+"type": "create dataset", 
+"z": "47a34765e588b147", 
+"name": "", 
+"path": "C:\\Users\\ASUS\\Desktop\\dataset\\Iris.csv", 
+"saveFolder": "C:\\Users\\ASUS\\Desktop\\dataset\\Test", 
+"saveName": "iris", 
+"input": "0,1,2,3", 
+"output": "4", 
+"trainingPartition": "", 
+"shuffle": true, 
+"seed": "", 
+"x": 760, 
+"y": 60, 
+"wires": [ 
+[ 
+"1e16c409dc89bdc3" 
+] 
+] 
+}, 
+{ 
+"id": "86b689b18fcb0f21", 
+"type": "load dataset", 
+"z": "47a34765e588b147", 
+"name": "Load Dataset", 
+"datasetFolder": "C:\\Users\\ASUS\\Desktop\\dataset\\Test", 
+"datasetName": "iris", 
+"partition": "train.csv", 
+"input": true, 
+"output": true, 
+"x": 430, 
+"y": 280, 
+"wires": [ 
+[ 
+"32131acc74685f2f" 
+], 
+[ 
+"109b2f1fb1b441b1" 
+] 
+] 
+}, 
+{ 
+"id": "603be35307aa54c0", 
+"type": "load dataset", 
+"z": "47a34765e588b147", 
+"name": "Load Dataset", 
+"datasetFolder": "C:\\Users\\ASUS\\Desktop\\dataset\\Test", 
+"datasetName": "iris", 
+"partition": "test.csv", 
+"input": false, 
+"output": true, 
+"x": 430, 
+"y": 440, 
+"wires": [ 
+[ 
+"aaaa24b5c760973c" 
+], 
+[ 
+"9fa716700db0457c" 
+] 
+] 
+}, 
+{ 
+"id": "d1e24c1b9164f594", 
+"type": "load dataset", 
+"z": "47a34765e588b147", 
+"name": "Load Dataset", 
+"datasetFolder": "C:\\Users\\ASUS\\Desktop\\dataset\\Test", 
+"datasetName": "iris", 
+"partition": "test.csv", 
+"input": true, 
+"output": false, 
+"x": 470, 
+"y": 660, 
+"wires": [ 
+[ 
+"685fe9da18dfe937" 
+], 
+[ 
+"9fa716700db0457c" 
+] 
+] 
+}, 
+{ 
+"id": "685fe9da18dfe937", 
+"type": "predictor", 
+"z": "47a34765e588b147", 
+"name": "decision tree classifier predictor", 
+"modelPath": "test/models", 
+"modelName": "dtc.b", 
+"x": 810, 
+"y": 540, 
+"wires": [ 
+[ 
+"aaaa24b5c760973c" 
+], 
+[ 
+"9fa716700db0457c" 
+] 
+] 
+}, 
+{ 
+"id": "aaaa24b5c760973c", 
+"type": "assessment", 
+"z": "47a34765e588b147", 
+"name": "Assessment Function", 
+"score": "accuracy_score", 
+"x": 840, 
+"y": 440, 
+"wires": [ 
+[ 
+"e23fe081cab4b8ba" 
+], 
+[ 
+"9fa716700db0457c" 
+] 
+] 
+}, 
+{ 
+"id": "32131acc74685f2f", 
+"type": "decision tree 
+classifier", "z": 
+"47a34765e588b147", 
+"name": "decision tree classifier trainer", 
+"savePath": "test/models", 
+"saveName": "dtc.b", 
+"maxDepth": "", 
+"criterion": "gini", 
+"splitt
+ er": 
+"best"
+ , "x": 
+780, 
+"y": 200, 
+"
+ w
+ i
+ r
+ e
+ s
+ "
+ : 
+[ 
+[ 
+"fa849d7bd14e5596" 
+]
+ , 
+[ 
+"109b2f1fb1b441b1" 
+] 
+] 
+} 
+]

@@ -1,0 +1,173 @@
+[
+    {
+        "id": "7800b98ac419456f",
+        "type": "inject",
+        "z": "9ad55dc405e880c3",
+        "name": "Load Dataset",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 130,
+        "y": 260,
+        "wires": [
+            [
+                "c422fa1a94e9839e"
+            ]
+        ]
+    },
+    {
+        "id": "ee1b271159cc7e08",
+        "type": "csv",
+        "z": "9ad55dc405e880c3",
+        "name": "CSV Parser",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 590,
+        "y": 260,
+        "wires": [
+            [
+                "c009c264bb80b243"
+            ]
+        ]
+    },
+    {
+        "id": "c422fa1a94e9839e",
+        "type": "file in",
+        "z": "9ad55dc405e880c3",
+        "name": "Read Crop File",
+        "filename": "C:\\Users\\dhanu\\Downloads\\unlabeled_crop.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 360,
+        "y": 260,
+        "wires": [
+            [
+                "ee1b271159cc7e08"
+            ]
+        ]
+    },
+    {
+        "id": "7cddfa73fe23f550",
+        "type": "ui_numeric",
+        "z": "9ad55dc405e880c3",
+        "name": "Set K",
+        "label": "Set K value for the number of Cluster",
+        "tooltip": "",
+        "group": "dcb877bcaa954327",
+        "order": 2,
+        "width": 12,
+        "height": 1,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "className": "",
+        "x": 450,
+        "y": 400,
+        "wires": [
+            [
+                "cf7059608ca76913"
+            ]
+        ]
+    },
+    {
+        "id": "cf7059608ca76913",
+        "type": "function",
+        "z": "9ad55dc405e880c3",
+        "name": "K Value Function",
+        "func": "flow.set(\"K\",msg.payload)\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c009c264bb80b243",
+        "type": "function",
+        "z": "9ad55dc405e880c3",
+        "name": "K Means Function",
+        "func": "let math = global.get('mathjs');\n\n// Set K-Means Parameters\nconst k = flow.get('K');\nconst maxIterations = 100;\n\nif (!k || k <= 0) {\n    throw new Error(\"Invalid value of k: \" + k);\n}\n\n// Label Encoding for categorical data\nfunction labelEncode(data, column) {\n    let uniqueValues = [...new Set(data.map(row => row[column]))];\n    let mapping = Object.fromEntries(uniqueValues.map((val, index) => [val, index]));\n    return data.map(row => ({ ...row, [column]: mapping[row[column]] }));\n}\n\n// Preprocessing Step: Remove rows with null or undefined values\nfunction preprocessData(data) {\n    return data.filter(row => {\n        // Check if any of the values in the row is null or undefined\n        return Object.values(row).every(value => value !== null && value !== undefined);\n    });\n}\n\n// Parse CSV input\nlet dataset = msg.payload.map(row => ({\n    Soil: row.soil,\n    Soil_Quality_Index: parseFloat(row.soil_quality_index),\n    Yield_kg_per_hectare: parseFloat(row.yield_kg_per_hectare),\n    Organic_Matter: parseFloat(row.organic_matter),\n    Ph_Level: parseFloat(row.ph_level),\n    Nitrogen_ppm: parseFloat(row.nitrogen_ppm),\n    Phosphorus_ppm: parseFloat(row.phosphorus_ppm),\n    Potassium_ppm: parseFloat(row.potassium_ppm),\n    Moisture: parseFloat(row.moisture),\n    Temperature_C: parseFloat(row.temperature_C)\n}));\n\n// Apply preprocessing to remove rows with null or undefined values\ndataset = preprocessData(dataset);\n\n// Perform label encoding on categorical columns (e.g., Soil)\nlet categoricalCols = [\"Soil\"];\ncategoricalCols.forEach(col => dataset = labelEncode(dataset, col));\n\n// Initialize centroids\nfunction initializeCentroids(data, k) {\n    let centroids = [];\n    let usedIndices = new Set();\n    while (centroids.length < k) {\n        let index = Math.floor(Math.random() * data.length);\n        if (!usedIndices.has(index)) {\n            centroids.push({ ...data[index] });\n            usedIndices.add(index);\n        }\n    }\n    return centroids;\n}\n\n// Calculate Euclidean distance\nfunction euclideanDistance(point1, point2) {\n    let sum = 0;\n    for (let key in point1) {\n        if (key !== \"cluster\") {\n            sum += Math.pow(point1[key] - point2[key], 2);\n        }\n    }\n    return Math.sqrt(sum);\n}\n\n// Assign clusters\nfunction assignClusters(data, centroids) {\n    return data.map(point => {\n        // Ensure distances array is valid\n        let distances = centroids.map(centroid => euclideanDistance(point, centroid));\n\n        if (distances.length === 0) {\n            console.error(\"Error: Distances array is empty for point:\", point);\n        }\n\n        let cluster = distances.indexOf(Math.min(...distances));\n\n        if (cluster === -1) {\n            console.error(\"Error: Invalid cluster assignment for point:\", point);\n        }\n\n        return { ...point, cluster: cluster };\n    });\n}\n\n// Compute new centroids\nfunction computeCentroids(data, k) {\n    // Ensure clusters are properly initialized\n    let clusters = Array.from({ length: k }, () => []); // Initialize clusters array with k empty arrays\n\n    // Assign points to their respective clusters\n    data.forEach(point => {\n        if (point.cluster === undefined) {\n            console.error(\"Error: Point does not have a valid cluster assignment:\", point);\n        }\n        if (point.cluster >= 0 && point.cluster < k) {\n            clusters[point.cluster].push(point);\n        } else {\n            console.error(\"Error: Invalid cluster ID:\", point.cluster);\n        }\n    });\n\n    // Ensure no empty clusters (handle them if necessary)\n    clusters = clusters.map(cluster => {\n        if (cluster.length === 0) {\n            console.warn(\"Warning: Empty cluster detected.\");\n            return null;\n        }\n        return cluster;\n    }).filter(cluster => cluster !== null); // Filter out empty clusters\n\n    // Compute new centroids\n    return clusters.map(cluster => {\n        let newCentroid = {};\n        for (let key in cluster[0]) {\n            if (key !== \"cluster\") {\n                newCentroid[key] = cluster.reduce((sum, p) => sum + p[key], 0) / cluster.length;\n            }\n        }\n        return newCentroid;\n    });\n}\n\n// Run K-Means Clustering\nlet centroids = initializeCentroids(dataset, k);\nlet iterations = 0;\nlet clusters = [];\n\nwhile (iterations < maxIterations) {\nclusters = assignClusters(dataset, centroids);\nconsole.log(\"Clusters:\", clusters);\n\nlet newCentroids = computeCentroids(clusters, k);\nconsole.log(\"New Centroids:\", newCentroids);\n\n// Check if centroids have converged\nif (JSON.stringify(newCentroids) === JSON.stringify(centroids)) break;\n\ncentroids = newCentroids;\niterations++;\n}\n\n// Format dataset for display in Table Node\nlet outputData = clusters.map(point => ({\n    Soil: point.Soil,\n    Soil_Quality_Index: point.Soil_Quality_Index,\n    Yield_kg_per_hectare: point.Yield_kg_per_hectare,\n    Organic_Matter: point.Organic_Matter,\n    Ph_Level: point.Ph_Level,\n    Nitrogen_ppm: point.Nitrogen_ppm,\n    Phosphorus_ppm: point.Phosphorus_ppm,\n    Potassium_ppm: point.Potassium_ppm,\n    Moisture: point.Moisture,\n    Temperature_C: point.Temperature_C,\n    Cluster: point.cluster // Append the identified cluster\n}));\n\n// Send the output to Node-RED Table Node\nmsg.payload = outputData;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 260,
+        "wires": [
+            [
+                "d09cc59f75f011a0"
+            ]
+        ]
+    },
+    {
+        "id": "d09cc59f75f011a0",
+        "type": "ui_table",
+        "z": "9ad55dc405e880c3",
+        "group": "dcb877bcaa954327",
+        "name": "Output Table",
+        "order": 4,
+        "width": 24,
+        "height": 10,
+        "columns": [],
+        "outputs": 0,
+        "cts": false,
+        "x": 1070,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "dcb877bcaa954327",
+        "type": "ui_group",
+        "name": "K Means",
+        "tab": "2486e45e9b49796b",
+        "order": 1,
+        "disp": true,
+        "width": 24,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "2486e45e9b49796b",
+        "type": "ui_tab",
+        "name": "Challenging_Task_05",
+        "icon": "dashboard",
+        "order": 11,
+        "disabled": false,
+        "hidden": false
+    }
+]

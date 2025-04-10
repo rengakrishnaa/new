@@ -1,0 +1,156 @@
+[
+    {
+        "id": "8f7ced7eaf567ec6",
+        "type": "rpi-gpio in",
+        "z": "fec493ef6e176abb",
+        "name": "Read HW-827 Signal",
+        "pin": "17",
+        "intype": "down",
+        "debounce": "25",
+        "read": true,
+        "bcm": true,
+        "x": 260,
+        "y": 280,
+        "wires": [
+            [
+                "6de40288963cf89e"
+            ]
+        ]
+    },
+    {
+        "id": "6de40288963cf89e",
+        "type": "function",
+        "z": "fec493ef6e176abb",
+        "name": "Process Sensor Data",
+        "func": "var sensorData = msg.payload;\nif (sensorData === 0) {\n    sensorData = 1;\n} else if (sensorData === 1) {\n    sensorData = 0;\n}\nmsg.payload = { value: sensorData };\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 280,
+        "wires": [
+            [
+                "f49283040300da67"
+            ]
+        ]
+    },
+    {
+        "id": "f49283040300da67",
+        "type": "mqtt out",
+        "z": "fec493ef6e176abb",
+        "name": "Publish to MQTT",
+        "topic": "hw827/data",
+        "qos": "2",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "e18a314c079ba0ac",
+        "x": 820,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "6f87271d4275c56f",
+        "type": "ui_gauge",
+        "z": "fec493ef6e176abb",
+        "name": "Display Sensor Data",
+        "group": "19e30eaf.d5b5d7",
+        "order": 1,
+        "width": "6",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Sensor Status",
+        "label": "Signal",
+        "format": "{{msg.payload.value}}",
+        "min": "0",
+        "max": "1",
+        "colors": [
+            "#000000",
+            "#000000",
+            "#000000"
+        ],
+        "seg1": "0",
+        "seg2": "1",
+        "diff": false,
+        "className": "",
+        "x": 820,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "a24a7923befe3bca",
+        "type": "mqtt in",
+        "z": "fec493ef6e176abb",
+        "name": "Subscribe to MQTT Data",
+        "topic": "hw827/data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "e18a314c079ba0ac",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 550,
+        "y": 420,
+        "wires": [
+            [
+                "6f87271d4275c56f"
+            ]
+        ]
+    },
+    {
+        "id": "e18a314c079ba0ac",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "19e30eaf.d5b5d7",
+        "type": "ui_group",
+        "name": "Group 1",
+        "tab": "e3f56b62.5e7e78",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "e3f56b62.5e7e78",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]

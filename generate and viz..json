@@ -1,0 +1,315 @@
+[
+    {
+        "id": "de72656ca5bfb74d",
+        "type": "tab",
+        "label": "CH-06",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f1a3e255977e705c",
+        "type": "inject",
+        "z": "de72656ca5bfb74d",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "e2fa3448596f7329"
+            ]
+        ]
+    },
+    {
+        "id": "e2fa3448596f7329",
+        "type": "function",
+        "z": "de72656ca5bfb74d",
+        "name": "Random Value Generation",
+        "func": "msg.payload = [];\nconst ranges = {\n    \"Normal\": { Vibration: [20, 40], Temperature: [40, 60], Current: [1, 4], RPM: [2200, 3000], TimeOperated: [0, 200] },\n    \"Warning\": { Vibration: [40.1, 60], Temperature: [61, 80], Current: [4.1, 7], RPM: [1600, 2199], TimeOperated: [201, 350] },\n    \"Critical\": { Vibration: [60.1, 80], Temperature: [81, 100], Current: [7.1, 10], RPM: [1000, 1599], TimeOperated: [351, 500] }\n};\n\nconst gen = cat => {\n    const r = ranges[cat];\n    const vibration = +(Math.random() * (r.Vibration[1] - r.Vibration[0]) + r.Vibration[0]).toFixed(1);\n    const temp = Math.floor(Math.random() * (r.Temperature[1] - r.Temperature[0] + 1) + r.Temperature[0]);\n    const current = +(Math.random() * (r.Current[1] - r.Current[0]) + r.Current[0]).toFixed(1);\n\n    return {\n        \"Motor ID\": \"M0\" + (1 + Math.floor(Math.random() * 5)),\n        \"Vibration (Hz)\": vibration,\n        \"Temperature (°C)\": temp,\n        \"Current (A)\": current,\n        \"RPM\": Math.floor(Math.random() * (r.RPM[1] - r.RPM[0] + 1) + r.RPM[0]),\n        \"Time Operated (h)\": Math.floor(Math.random() * (r.TimeOperated[1] - r.TimeOperated[0] + 1) + r.TimeOperated[0]),\n        \"Failure\": (cat === \"Critical\" && (vibration > 75 || temp > 95 || current > 9)) ? \"Yes\" : \"No\"\n    };\n};\n\nlet labels = Array(200).fill(\"Normal\").concat(Array(200).fill(\"Warning\"), Array(100).fill(\"Critical\"));\nlabels.sort(() => Math.random() - 0.5);\nmsg.payload = labels.map(c => gen(c));\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 120,
+        "wires": [
+            [
+                "42c21910a9e22603"
+            ]
+        ]
+    },
+    {
+        "id": "274eb3dde652d21f",
+        "type": "file",
+        "z": "de72656ca5bfb74d",
+        "name": "write in file",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 06\\motor_status.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 690,
+        "y": 120,
+        "wires": [
+            [
+                "8724daeb13c67841"
+            ]
+        ]
+    },
+    {
+        "id": "42c21910a9e22603",
+        "type": "csv",
+        "z": "de72656ca5bfb74d",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "once",
+        "multi": "one",
+        "ret": "\\r\\n",
+        "temp": "\"Motor ID\",\"Vibration (Hz)\",\"Temperature (°C)\",\"Current (A)\",\"RPM\",\"Time Operated (h)\",\"Failure\",\"Status\"",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 530,
+        "y": 120,
+        "wires": [
+            [
+                "274eb3dde652d21f"
+            ]
+        ]
+    },
+    {
+        "id": "8724daeb13c67841",
+        "type": "debug",
+        "z": "de72656ca5bfb74d",
+        "name": "debug ",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 850,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "a10899a4f5125b45",
+        "type": "inject",
+        "z": "de72656ca5bfb74d",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 320,
+        "wires": [
+            [
+                "4bbfd7e0428397ac"
+            ]
+        ]
+    },
+    {
+        "id": "4bbfd7e0428397ac",
+        "type": "file in",
+        "z": "de72656ca5bfb74d",
+        "name": "read dataset",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 06\\motor_status.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 270,
+        "y": 320,
+        "wires": [
+            [
+                "30a75c41788836b7"
+            ]
+        ]
+    },
+    {
+        "id": "30a75c41788836b7",
+        "type": "csv",
+        "z": "de72656ca5bfb74d",
+        "name": "csv",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": false,
+        "include_null_values": false,
+        "x": 430,
+        "y": 320,
+        "wires": [
+            [
+                "2bff18a049294459"
+            ]
+        ]
+    },
+    {
+        "id": "2bff18a049294459",
+        "type": "function",
+        "z": "de72656ca5bfb74d",
+        "name": "classify and count Status",
+        "func": "let counts = { Normal: 0, Warning: 0, Critical: 0 };\n\nfunction classify(row) {\n    const v = row[\"Vibration (Hz)\"];\n    const t = row[\"Temperature (°C)\"];\n    const c = row[\"Current (A)\"];\n    const rpm = row[\"RPM\"];\n    const time = row[\"Time Operated (h)\"];\n\n    if (v >= 20 && v <= 40 && t >= 40 && t <= 60 && c >= 1 && c <= 4 && rpm >= 2200 && rpm <= 3000 && time >= 0 && time <= 200) {\n        counts.Normal++;\n        return \"Normal\";\n    } else if (v > 40 && v <= 60 && t >= 61 && t <= 80 && c > 4 && c <= 7 && rpm >= 1600 && rpm <= 2199 && time >= 201 && time <= 350) {\n        counts.Warning++;\n        return \"Warning\";\n    } else if (v > 60 && v <= 80 && t >= 81 && t <= 100 && c > 7 && c <= 10 && rpm >= 1000 && rpm <= 1599 && time >= 351 && time <= 500) {\n        counts.Critical++;\n        return \"Critical\";\n    } else {\n        return \"Unclassified\";\n    }\n}\n\nmsg.payload = msg.payload.map(row => {\n    row[\"Status\"] = classify(row);\n    return row;\n});\n\nmsg.counts = counts;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 320,
+        "wires": [
+            [
+                "a028030c2a157596",
+                "230dc6c77cc6a964"
+            ]
+        ]
+    },
+    {
+        "id": "a028030c2a157596",
+        "type": "ui_template",
+        "z": "de72656ca5bfb74d",
+        "group": "3eb5c9339c109e73",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\">\n\n    <!-- Status Legend -->\n    <div style=\"margin-bottom: 10px;\">\n        <span style=\"background:#c8e6c9; padding:4px 10px; border-radius:4px; margin-right:5px;\">Normal</span>\n        <span style=\"background:#ffeb3b; padding:4px 10px; border-radius:4px; margin-right:5px;\">Warning</span>\n        <span style=\"background:#ff9800; padding:4px 10px; border-radius:4px; margin-right:5px;\">Critical</span>\n        <span style=\"background:#f44336; color:white; padding:4px 10px; border-radius:4px;\">Failure</span>\n    </div>\n\n    <!-- Data Table -->\n    <table\n        style=\"width:100%; border-collapse: collapse; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;\">\n        <thead>\n            <tr style=\"background:#333; color:white;\">\n                <th style=\"padding:12px;\">Motor ID</th>\n                <th style=\"padding:12px;\">Vibration (Hz)</th>\n                <th style=\"padding:12px;\">Temperature (°C)</th>\n                <th style=\"padding:12px;\">Current (A)</th>\n                <th style=\"padding:12px;\">RPM</th>\n                <th style=\"padding:12px;\">Time Operated (h)</th>\n                <th style=\"padding:12px;\">Failure</th>\n                <th style=\"padding:12px;\">Status</th>\n            </tr>\n        </thead>\n        <tbody>\n            <tr ng-repeat=\"row in msg.payload\" ng-style=\"{\n                'background-color': row['Failure'] === 'Yes' ? '#f44336' : \n                                    row['Status'] === 'Critical' ? '#ffcc80' : \n                                    row['Status'] === 'Warning' ? '#fff9c4' : \n                                    row['Status'] === 'Normal' ? '#e8f5e9' : \n                                    'white',\n                'color': row['Failure'] === 'Yes' ? 'white' : 'black'\n            }\" style=\"transition: background-color 0.3s;\">\n                <td style=\"padding:10px;\">{{row[\"Motor ID\"]}}</td>\n                <td style=\"padding:10px;\">{{row[\"Vibration (Hz)\"]}}</td>\n                <td style=\"padding:10px;\">{{row[\"Temperature (°C)\"]}}</td>\n                <td style=\"padding:10px;\">{{row[\"Current (A)\"]}}</td>\n                <td style=\"padding:10px;\">{{row[\"RPM\"]}}</td>\n                <td style=\"padding:10px;\">{{row[\"Time Operated (h)\"]}}</td>\n                <td style=\"padding:10px;\">{{row[\"Failure\"]}}</td>\n                <td style=\"padding:10px;\">{{row[\"Status\"]}}</td>\n            </tr>\n        </tbody>\n    </table>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 840,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6258aa172d481658",
+        "type": "ui_template",
+        "z": "de72656ca5bfb74d",
+        "group": "8b67988ebd135c31",
+        "name": "",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n    .status-box {\n        padding: 10px;\n        margin: 10px 0;\n        border-radius: 10px;\n        background: #f9f9f9;\n        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n    }\n\n    .motor-id {\n        font-weight: bold;\n        font-size: 1.1em;\n        margin-bottom: 5px;\n    }\n\n    .tag {\n        display: inline-block;\n        padding: 4px 8px;\n        margin-right: 8px;\n        border-radius: 5px;\n        font-size: 0.9em;\n        color: white;\n    }\n\n    .normal {\n        background: green;\n    }\n\n    .warning {\n        background: orange;\n    }\n\n    .critical {\n        background: red;\n    }\n</style>\n\n<div ng-repeat=\"item in msg.payload\" class=\"status-box\">\n    <div class=\"motor-id\">{{item[\"Motor ID\"]}}</div>\n    <div>\n        <span class=\"tag normal\">Normal: {{item.Normal}}</span>\n        <span class=\"tag warning\">Warning: {{item.Warning}}</span>\n        <span class=\"tag critical\">Critical: {{item.Critical}}</span>\n    </div>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 840,
+        "y": 440,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "230dc6c77cc6a964",
+        "type": "function",
+        "z": "de72656ca5bfb74d",
+        "name": "show count per motor",
+        "func": "let statusCounts = {};\n\nmsg.payload.forEach(row => {\n    let id = row[\"Motor ID\"];\n    let status = row[\"Status\"];\n\n    if (!statusCounts[id]) {\n        statusCounts[id] = { \"Normal\": 0, \"Warning\": 0, \"Critical\": 0 };\n    }\n\n    statusCounts[id][status]++;\n});\n\nmsg.payload = Object.entries(statusCounts).map(([motorId, counts]) => ({\n    \"Motor ID\": motorId,\n    ...counts\n}));\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 880,
+        "y": 360,
+        "wires": [
+            [
+                "6258aa172d481658"
+            ]
+        ]
+    },
+    {
+        "id": "ab307fedca5f6af5",
+        "type": "ui_spacer",
+        "z": "de72656ca5bfb74d",
+        "name": "spacer",
+        "group": "8b67988ebd135c31",
+        "order": 1,
+        "width": "5",
+        "height": "1"
+    },
+    {
+        "id": "3eb5c9339c109e73",
+        "type": "ui_group",
+        "name": "table",
+        "tab": "8b4b57d564e0939e",
+        "order": 2,
+        "disp": false,
+        "width": 15,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "8b67988ebd135c31",
+        "type": "ui_group",
+        "name": "count",
+        "tab": "8b4b57d564e0939e",
+        "order": 1,
+        "disp": false,
+        "width": 7,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "8b4b57d564e0939e",
+        "type": "ui_tab",
+        "name": "CH-06",
+        "icon": "dashboard",
+        "order": 4,
+        "disabled": false,
+        "hidden": false
+    }
+]

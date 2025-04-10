@@ -1,0 +1,42 @@
+[
+    {
+        "id": "8cdf5c8f25c60be8",
+        "type": "ui_template",
+        "z": "ed9cd12e2fccc909",
+        "group": "7a204288da2316e0",
+        "name": "",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "format": "<div style=\"text-align: center; padding: 20px;\">\n    <h3>K-Means Clustering Results</h3>\n    <div style=\"display: flex; justify-content: center;\">\n        <table border=\"1\" style=\"width: 80%; text-align: center; border-collapse: collapse; font-size: 18px;\">\n            <thead>\n                <tr style=\"background-color: #f2f2f2; height: 50px;\">\n                    <th style=\"padding: 15px;\">Temperature (°C)</th>\n                    <th style=\"padding: 15px;\">Humidity (%)</th>\n                    <th style=\"padding: 15px;\">Cluster</th>\n                </tr>\n            </thead>\n            <tbody ng-bind-html=\"msg.payload.html | trusted\"></tbody>\n        </table>\n    </div>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 880,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7a204288da2316e0",
+        "type": "ui_group",
+        "name": "Default",
+        "tab": "40159c44bf5e7327",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "40159c44bf5e7327",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]   

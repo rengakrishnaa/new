@@ -1,0 +1,162 @@
+[
+    {
+        "id": "d3be5d370a7e4a84",
+        "type": "tab",
+        "label": "CH-03",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4f75aac4ff989c28",
+        "type": "file",
+        "z": "d3be5d370a7e4a84",
+        "name": "write HRV in dataset",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 03\\wearable device data.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 900,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8e4a3b7aa1e48a67",
+        "type": "file in",
+        "z": "d3be5d370a7e4a84",
+        "name": "read dataset",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 03\\wearable device data.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 250,
+        "y": 140,
+        "wires": [
+            [
+                "d47ceeed6c204f20"
+            ]
+        ]
+    },
+    {
+        "id": "d47ceeed6c204f20",
+        "type": "csv",
+        "z": "d3be5d370a7e4a84",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 410,
+        "y": 140,
+        "wires": [
+            [
+                "9b3c9de85ff81139"
+            ]
+        ]
+    },
+    {
+        "id": "85f0c7e8c87cb9fc",
+        "type": "csv",
+        "z": "d3be5d370a7e4a84",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": "",
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\r\\n",
+        "temp": "\"Heart Rate\",\"Steps\",\"Sleep\",\"Body Temperature\",\"Stress Level\",\"HRV\"",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 710,
+        "y": 140,
+        "wires": [
+            [
+                "4f75aac4ff989c28"
+            ]
+        ]
+    },
+    {
+        "id": "fcf4a2dc91a48885",
+        "type": "inject",
+        "z": "d3be5d370a7e4a84",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 90,
+        "y": 140,
+        "wires": [
+            [
+                "8e4a3b7aa1e48a67"
+            ]
+        ]
+    },
+    {
+        "id": "9b3c9de85ff81139",
+        "type": "function",
+        "z": "d3be5d370a7e4a84",
+        "name": "function ",
+        "func": "let heart_rate = [];\nlet steps = [];\nlet sleep = [];\nlet body_temperature = [];\nlet stress_level = [];\n\nlet ypred_hrv = [];\n\nmsg.payload.forEach(row => {\n    heart_rate.push(row['Heart Rate']);\n    steps.push(row['Steps']);\n    sleep.push(row['Sleep']);\n    body_temperature.push(row['Body Temperature']);\n    stress_level.push(row['Stress Level']);\n});\n\nfor (let i = 0; i < heart_rate.length; i++) {\n    ypred_hrv[i] = 100.5 +\n        0.8 * heart_rate[i] +\n        0.002 * steps[i] +\n        2.5 * sleep[i] +\n        -3 * body_temperature[i] +\n        -5 * stress_level[i];\n}\n\nmsg.payload.forEach((row, index) => {\n    row['HRV'] = ypred_hrv[index];\n});\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 140,
+        "wires": [
+            [
+                "85f0c7e8c87cb9fc",
+                "39f764c7150fba27"
+            ]
+        ]
+    },
+    {
+        "id": "39f764c7150fba27",
+        "type": "debug",
+        "z": "d3be5d370a7e4a84",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 710,
+        "y": 220,
+        "wires": []
+    }
+]

@@ -1,0 +1,345 @@
+[
+    {
+        "id": "e47224f3b3d44bc8",
+        "type": "tab",
+        "label": "CH-05",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "7247bb85f75fdd5f",
+        "type": "inject",
+        "z": "e47224f3b3d44bc8",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 90,
+        "y": 220,
+        "wires": [
+            [
+                "3790a41baca8f79c"
+            ]
+        ]
+    },
+    {
+        "id": "3790a41baca8f79c",
+        "type": "file in",
+        "z": "e47224f3b3d44bc8",
+        "name": "read dataset",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 05\\unlabeled_crop.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 250,
+        "y": 220,
+        "wires": [
+            [
+                "eb1404ec48aaecfc"
+            ]
+        ]
+    },
+    {
+        "id": "eb1404ec48aaecfc",
+        "type": "csv",
+        "z": "e47224f3b3d44bc8",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 410,
+        "y": 220,
+        "wires": [
+            [
+                "b443341bc83f51b0"
+            ]
+        ]
+    },
+    {
+        "id": "b443341bc83f51b0",
+        "type": "function",
+        "z": "e47224f3b3d44bc8",
+        "name": "k-means clustering",
+        "func": "const k = global.get('kvalue') || 3;\nconst maxIterations = 100;\n\nfunction labelEncode(data, column) {\n    const uniqueVals = [...new Set(data.map(row => row[column]))];\n    const mapping = Object.fromEntries(uniqueVals.map((val, i) => [val, i]));\n    return data.map(row => ({ ...row, [column]: mapping[row[column]] }));\n}\n\nfunction cleanData(data) {\n    return data.filter(row => Object.values(row).every(v => v !== null && v !== undefined && v !== \"\"));\n}\n\nlet dataset = msg.payload.map(row => ({\n    soil: row.soil,\n    soil_quality_index: +row.soil_quality_index,\n    yield_kg_per_hectare: +row.yield_kg_per_hectare,\n    organic_matter: +row[\"organic_matter_%\"],\n    ph_level: +row.ph_level,\n    nitrogen: +row[\"nitrogen_ppm\"],\n    phosphorus: +row[\"phosphorus_ppm\"],\n    potassium: +row[\"potassium_ppm\"],\n    moisture: +row[\"moisture_%\"],\n    temperature: +row[\"temperature_C\"]\n}));\n\ndataset = cleanData(dataset);\ndataset = labelEncode(dataset, \"soil\");\n\nfunction initCentroids(data, k) {\n    let used = new Set(), centroids = [];\n    while (centroids.length < k) {\n        let i = Math.floor(Math.random() * data.length);\n        if (!used.has(i)) {\n            centroids.push({ ...data[i] });\n            used.add(i);\n        }\n    }\n    return centroids;\n}\n\nfunction distance(a, b) {\n    return Math.sqrt(Object.keys(a).reduce((sum, key) => {\n        if (key !== \"cluster\") sum += Math.pow(a[key] - b[key], 2);\n        return sum;\n    }, 0));\n}\n\nfunction assign(data, centroids) {\n    return data.map(point => {\n        let distances = centroids.map(c => distance(point, c));\n        return { ...point, cluster: distances.indexOf(Math.min(...distances)) };\n    });\n}\n\nfunction recompute(data, k) {\n    let clusters = Array.from({ length: k }, () => []);\n    data.forEach(p => clusters[p.cluster].push(p));\n\n    return clusters.map(group => {\n        let centroid = {};\n        if (group.length === 0) return null;\n        Object.keys(group[0]).forEach(key => {\n            if (key !== \"cluster\") {\n                centroid[key] = group.reduce((sum, p) => sum + p[key], 0) / group.length;\n            }\n        });\n        return centroid;\n    }).filter(c => c !== null);\n}\n\nlet centroids = initCentroids(dataset, k);\nlet clustered = [], iter = 0;\n\nwhile (iter++ < maxIterations) {\n    clustered = assign(dataset, centroids);\n    const newCentroids = recompute(clustered, k);\n    if (JSON.stringify(newCentroids) === JSON.stringify(centroids)) break;\n    centroids = newCentroids;\n}\n\nmsg.payload = clustered.map(p => ({\n    soil: p.soil,\n    soil_quality_index: p.soil_quality_index,\n    yield_kg_per_hectare: p.yield_kg_per_hectare,\n    organic_matter: p.organic_matter,\n    ph_level: p.ph_level,\n    nitrogen: p.nitrogen,\n    phosphorus: p.phosphorus,\n    potassium: p.potassium,\n    moisture: p.moisture,\n    temperature: p.temperature,\n    Cluster: p.cluster\n}));\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 590,
+        "y": 220,
+        "wires": [
+            [
+                "14443223d4598f51",
+                "e8da71155b8fe7f1"
+            ]
+        ]
+    },
+    {
+        "id": "14443223d4598f51",
+        "type": "debug",
+        "z": "e47224f3b3d44bc8",
+        "name": "debug ",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "849232870b0a2d43",
+        "type": "ui_numeric",
+        "z": "e47224f3b3d44bc8",
+        "name": "",
+        "label": "k-value",
+        "tooltip": "",
+        "group": "df7375e35da73c5d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "className": "",
+        "x": 100,
+        "y": 300,
+        "wires": [
+            [
+                "f854061d57d8d982"
+            ]
+        ]
+    },
+    {
+        "id": "f854061d57d8d982",
+        "type": "function",
+        "z": "e47224f3b3d44bc8",
+        "name": "set k",
+        "func": "global.set('kValue', msg.payload);\nreturn msg; ",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 250,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e8da71155b8fe7f1",
+        "type": "ui_table",
+        "z": "e47224f3b3d44bc8",
+        "group": "a637d7a665d06496",
+        "name": "",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "columns": [
+            {
+                "field": "soil",
+                "title": "Soil",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "soil_quality_index",
+                "title": "Soil Quality Index",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "yield_kg_per_hectare",
+                "title": "Yield (kg/ha)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "organic_matter",
+                "title": "Organic Matter (%)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "ph_level",
+                "title": "pH Level",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "nitrogen",
+                "title": "Nitrogen (ppm)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "phosphorus",
+                "title": "Phosphorus (ppm)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "potassium",
+                "title": "Potassium (ppm)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "moisture",
+                "title": "Moisture (%)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "temperature",
+                "title": "Temperature (°C)",
+                "width": "",
+                "align": "left",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            },
+            {
+                "field": "Cluster",
+                "title": "Cluster",
+                "width": "",
+                "align": "center",
+                "formatter": "plaintext",
+                "formatterParams": {
+                    "target": "_blank"
+                }
+            }
+        ],
+        "outputs": 0,
+        "cts": false,
+        "x": 770,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "a55b65fc44ef6f6f",
+        "type": "ui_spacer",
+        "z": "e47224f3b3d44bc8",
+        "name": "spacer",
+        "group": "a637d7a665d06496",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "f7f4bbddffa916bf",
+        "type": "ui_spacer",
+        "z": "e47224f3b3d44bc8",
+        "name": "spacer",
+        "group": "",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "df7375e35da73c5d",
+        "type": "ui_group",
+        "name": "input",
+        "tab": "9f9fd19ac6c5c24f",
+        "order": 1,
+        "disp": false,
+        "width": 20,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a637d7a665d06496",
+        "type": "ui_group",
+        "name": "table",
+        "tab": "9f9fd19ac6c5c24f",
+        "order": 2,
+        "disp": false,
+        "width": 20,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "9f9fd19ac6c5c24f",
+        "type": "ui_tab",
+        "name": "CH-05",
+        "icon": "dashboard",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    }
+]

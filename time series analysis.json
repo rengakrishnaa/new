@@ -1,0 +1,378 @@
+[
+    {
+        "id": "bc60cfaa29eac727",
+        "type": "tab",
+        "label": "CH-04",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "4be2ef51d241514d",
+        "type": "inject",
+        "z": "bc60cfaa29eac727",
+        "name": "inject",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "2",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "10",
+        "topic": "",
+        "x": 110,
+        "y": 180,
+        "wires": [
+            [
+                "f91655524e33ebad"
+            ]
+        ]
+    },
+    {
+        "id": "f91655524e33ebad",
+        "type": "function",
+        "z": "bc60cfaa29eac727",
+        "name": "random",
+        "func": "msg.payload = Math.floor(Math.random() * 50) + 80;\nmsg.topic = \"power\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 180,
+        "wires": [
+            [
+                "ecbb4fd95bff09d3",
+                "b0b06c970e34017f"
+            ]
+        ]
+    },
+    {
+        "id": "ecbb4fd95bff09d3",
+        "type": "smooth",
+        "z": "bc60cfaa29eac727",
+        "name": "",
+        "property": "payload",
+        "action": "mean",
+        "count": "10",
+        "round": "2",
+        "mult": "single",
+        "reduce": false,
+        "x": 420,
+        "y": 260,
+        "wires": [
+            [
+                "80ec102d3a13fbac",
+                "14318fa5fb583c15",
+                "b1813d022e080c3a"
+            ]
+        ]
+    },
+    {
+        "id": "80ec102d3a13fbac",
+        "type": "ui_chart",
+        "z": "bc60cfaa29eac727",
+        "name": "",
+        "group": "b097a49ec726368b",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "chart",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "200",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 570,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "14318fa5fb583c15",
+        "type": "function",
+        "z": "bc60cfaa29eac727",
+        "name": "average",
+        "func": "let avg = msg.payload;\nmsg.payload = \"Average (10 Values): \" + avg;\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 340,
+        "wires": [
+            [
+                "cdcb6cf382c03d2b"
+            ]
+        ]
+    },
+    {
+        "id": "b1813d022e080c3a",
+        "type": "function",
+        "z": "bc60cfaa29eac727",
+        "name": "led mode",
+        "func": "if (msg.payload >= 100){\n    msg.payload = true;\n}\nelse{\n    msg.payload = false;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 420,
+        "wires": [
+            [
+                "e98419162edb89de"
+            ]
+        ]
+    },
+    {
+        "id": "e98419162edb89de",
+        "type": "ui_led",
+        "z": "bc60cfaa29eac727",
+        "order": 3,
+        "group": "b732be73583a37b3",
+        "width": 0,
+        "height": 0,
+        "label": "",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "true",
+                "valueType": "bool"
+            },
+            {
+                "color": "#008000",
+                "value": "false",
+                "valueType": "bool"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "",
+        "x": 730,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "b0b06c970e34017f",
+        "type": "function",
+        "z": "bc60cfaa29eac727",
+        "name": "store value",
+        "func": "//let time = new Date().toISOString();\n\nlet now = new Date();\n\nlet day = String(now.getDate()).padStart(2, '0');\nlet month = String(now.getMonth() + 1).padStart(2, '0'); \nlet year = now.getFullYear();\n\nlet hours = String(now.getHours()).padStart(2, '0');\nlet minutes = String(now.getMinutes()).padStart(2, '0');\nlet seconds = String(now.getSeconds()).padStart(2, '0');\n\nlet time = `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;\n\n\nlet val = msg.payload;\nlet alert = (val > 100) ? \"yes\" : \"no\";\n\nmsg.payload = {\n    time: time,\n    power: val,\n    alert: alert\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 180,
+        "wires": [
+            [
+                "d8a44f95d3673747"
+            ]
+        ]
+    },
+    {
+        "id": "d8a44f95d3673747",
+        "type": "csv",
+        "z": "bc60cfaa29eac727",
+        "name": "",
+        "sep": ",",
+        "hdrin": false,
+        "hdrout": "once",
+        "multi": "one",
+        "ret": "\\r\\n",
+        "temp": "\"Time\",\"Power\",\"Alert\"",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": false,
+        "include_null_values": false,
+        "x": 590,
+        "y": 180,
+        "wires": [
+            [
+                "8d21c0c856667c1a"
+            ]
+        ]
+    },
+    {
+        "id": "8d21c0c856667c1a",
+        "type": "file",
+        "z": "bc60cfaa29eac727",
+        "name": "write file",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 04\\factory_power_log.csv",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 740,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cdcb6cf382c03d2b",
+        "type": "debug",
+        "z": "bc60cfaa29eac727",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 730,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "d3e21216d860d199",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b097a49ec726368b",
+        "order": 1,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "4f2cc40113e173cc",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b097a49ec726368b",
+        "order": 2,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "49f50de4e7ad1b18",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b097a49ec726368b",
+        "order": 4,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "bc5079bb29ff6b42",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b097a49ec726368b",
+        "order": 5,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "cf042dee4efc48ed",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b732be73583a37b3",
+        "order": 1,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "a4122bf20066f1ff",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b732be73583a37b3",
+        "order": 2,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "3cc35c4c52ee6a51",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b732be73583a37b3",
+        "order": 4,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "8070e2550d58ae61",
+        "type": "ui_spacer",
+        "z": "bc60cfaa29eac727",
+        "name": "spacer",
+        "group": "b732be73583a37b3",
+        "order": 5,
+        "width": 9,
+        "height": 1
+    },
+    {
+        "id": "b097a49ec726368b",
+        "type": "ui_group",
+        "name": "chart",
+        "tab": "6f45f1c34ee0b484",
+        "order": 1,
+        "disp": false,
+        "width": 9,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "b732be73583a37b3",
+        "type": "ui_group",
+        "name": "led",
+        "tab": "6f45f1c34ee0b484",
+        "order": 2,
+        "disp": false,
+        "width": 9,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6f45f1c34ee0b484",
+        "type": "ui_tab",
+        "name": "CH-04",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    }
+]

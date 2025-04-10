@@ -1,0 +1,306 @@
+[
+    {
+        "id": "253a69d2451fcb45",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "9bbe930cf4a98d4e",
+        "type": "function",
+        "z": "253a69d2451fcb45",
+        "name": "random (with labels, with id)",
+        "func": "msg.payload = [];\n\nfunction generateFeatures(label) {\n    let f1, f2;\n    if (label === 'A') {\n        f1 = Math.random() * 5;\n        f2 = Math.random() * 20;\n    } else if (label === 'B') {\n        f1 = 5 + Math.random() * 5;\n        f2 = 20 + Math.random() * 10;\n    } else {\n        f1 = 10 + Math.random() * 5;\n        f2 = 30 + Math.random() * 10;\n    }\n    return {\n        feature1: +f1.toFixed(2),\n        feature2: +f2.toFixed(2)\n    };\n} \n\nlet motorIDs = ['A001', 'A002', 'A003', 'A004', 'A005'];\n\nlet labels = Array(50).fill('A').concat(Array(50).fill('B'), Array(50).fill('C'));\n\nfor (let i = labels.length - 1; i > 0; i--) {\n    const j = Math.floor(Math.random() * (i + 1));\n    [labels[i], labels[j]] = [labels[j], labels[i]];\n}\n\nfor (let i = 0; i < 150; i++) {\n    const label = labels[i];\n    const id = motorIDs[Math.floor(Math.random() * motorIDs.length)];\n    const features = generateFeatures(label);\n    msg.payload.push({\n        id: id,\n        feature1: features.feature1,\n        feature2: features.feature2,\n        label: label\n    });\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 80,
+        "wires": [
+            [
+                "e7df4357a94df4ba"
+            ]
+        ]
+    },
+    {
+        "id": "d1ddf2d8cdbfbd40",
+        "type": "inject",
+        "z": "253a69d2451fcb45",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 80,
+        "wires": [
+            [
+                "9bbe930cf4a98d4e"
+            ]
+        ]
+    },
+    {
+        "id": "e7df4357a94df4ba",
+        "type": "debug",
+        "z": "253a69d2451fcb45",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "429d0add8bf1b0f9",
+        "type": "function",
+        "z": "253a69d2451fcb45",
+        "name": "random (with labels, without id)",
+        "func": "msg.payload = [];\n\nfunction generateFeatures(label) {\n    let f1, f2;\n\n    if (label === 'A') {\n        f1 = 1 + Math.random() * 2;     // Range: 1–3\n        f2 = 10 + Math.random() * 5;    // Range: 10–15\n    } else if (label === 'B') {\n        f1 = 4 + Math.random() * 2;    \n        f2 = 16 + Math.random() * 5;   \n    } else if (label === 'C') {\n        f1 = 7 + Math.random() * 2;     \n        f2 = 22 + Math.random() * 5;    \n    }\n\n    return {\n        feature1: +f1.toFixed(2),\n        feature2: +f2.toFixed(2)\n    };\n}\n\n// Create and shuffle labels\nlet labels = Array(50).fill('A').concat(Array(50).fill('B'), Array(50).fill('C'));\nfor (let i = labels.length - 1; i > 0; i--) {\n    const j = Math.floor(Math.random() * (i + 1));\n    [labels[i], labels[j]] = [labels[j], labels[i]];\n}\n\nfor (let i = 0; i < labels.length; i++) {\n    const label = labels[i];\n    const features = generateFeatures(label);\n    msg.payload.push({\n        feature1: features.feature1,\n        feature2: features.feature2,\n        label: label\n    });\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 140,
+        "wires": [
+            [
+                "c22d799aec293bb2"
+            ]
+        ]
+    },
+    {
+        "id": "ef52e3923c9d24f1",
+        "type": "inject",
+        "z": "253a69d2451fcb45",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "429d0add8bf1b0f9"
+            ]
+        ]
+    },
+    {
+        "id": "c22d799aec293bb2",
+        "type": "debug",
+        "z": "253a69d2451fcb45",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "a09131fc4a4e67f3",
+        "type": "function",
+        "z": "253a69d2451fcb45",
+        "name": "Generate Linear Dataset",
+        "func": "msg.payload = [];\n\nfor (let i = 0; i < 50; i++) {\n    let x = +(Math.random() * 50).toFixed(2);\n    let y = +(2 * x + 5 + (Math.random() * 10 - 5)).toFixed(2); \n    msg.payload.push({ x, y });\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 260,
+        "wires": [
+            [
+                "89bba2c9f00a428d"
+            ]
+        ]
+    },
+    {
+        "id": "19df4b8eab007708",
+        "type": "ui_template",
+        "z": "253a69d2451fcb45",
+        "group": "308f92ef066f97c8",
+        "name": "Table",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<table style=\"width:100%; font-family:sans-serif; border-collapse: collapse; margin-top: 10px;\">\n  <thead>\n    <tr style=\"background-color:#333; color:white;\">\n      <th style=\"padding:8px;\">#</th>\n      <th style=\"padding:8px;\">X</th>\n      <th style=\"padding:8px;\">Actual Y</th>\n      <th style=\"padding:8px;\">Predicted Y</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr ng-repeat=\"row in msg.payload\" ng-style=\"{\n      'background-color': Math.abs(row.actualY - row.predictedY) < 2 ? '#c8e6c9' : '#ffcdd2'\n    }\">\n      <td style=\"padding:6px;\">{{$index + 1}}</td>\n      <td style=\"padding:6px;\">{{row.x}}</td>\n      <td style=\"padding:6px;\">{{row.actualY}}</td>\n      <td style=\"padding:6px;\">{{row.predictedY}}</td>\n    </tr>\n  </tbody>\n</table>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 750,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fcf0b0982bc8a41c",
+        "type": "inject",
+        "z": "253a69d2451fcb45",
+        "name": "Run",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 140,
+        "y": 260,
+        "wires": [
+            [
+                "a09131fc4a4e67f3"
+            ]
+        ]
+    },
+    {
+        "id": "89bba2c9f00a428d",
+        "type": "function",
+        "z": "253a69d2451fcb45",
+        "name": "linear regression",
+        "func": "let data = msg.payload;\nlet n = data.length;\n\nlet sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;\n\nfor (let i = 0; i < n; i++) {\n    let x = parseFloat(data[i].x);\n    let y = parseFloat(data[i].y);\n    sumX += x;\n    sumY += y;\n    sumXY += x * y;\n    sumXX += x * x;\n}\n\nlet m = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);\nlet b = (sumY - m * sumX) / n;\n\nmsg.payload = data.map((point, i) => {\n    let predY = +(m * point.x + b).toFixed(2);\n    return {\n        x: point.x,\n        actualY: point.y,\n        predictedY: predY\n    };\n});\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 260,
+        "wires": [
+            [
+                "19df4b8eab007708",
+                "05cd5e75a683b3c3"
+            ]
+        ]
+    },
+    {
+        "id": "b0b814f3a636711c",
+        "type": "ui_chart",
+        "z": "253a69d2451fcb45",
+        "name": "",
+        "group": "308f92ef066f97c8",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "chart",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 890,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "05cd5e75a683b3c3",
+        "type": "function",
+        "z": "253a69d2451fcb45",
+        "name": "chart",
+        "func": "let actual = [];\nlet predicted = [];\nlet labels = [];\n\nmsg.payload.forEach((point, i) => {\n    actual.push(point.actualY);\n    predicted.push(point.predictedY);\n    labels.push(point.x);\n});\n\nreturn {\n    payload: [\n        {\n            series: [\"Actual\"],\n            data: [actual],\n            labels: labels\n        },\n        {\n            series: [\"Predicted\"],\n            data: [predicted],\n            labels: labels\n        }\n    ]\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 320,
+        "wires": [
+            [
+                "b0b814f3a636711c"
+            ]
+        ]
+    },
+    {
+        "id": "308f92ef066f97c8",
+        "type": "ui_group",
+        "name": "Default",
+        "tab": "1e7472f3c365ceb0",
+        "order": 1,
+        "disp": false,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "1e7472f3c365ceb0",
+        "type": "ui_tab",
+        "name": "Default",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

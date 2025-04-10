@@ -1,0 +1,172 @@
+const k = global.get('kvalue') || 3;
+const maxIterations = 100;
+
+// Step 1: Clean data
+function cleanData(data) {
+    var cleaned = [];
+    for (var i = 0; i < data.length; i++) {
+        var row = data[i];
+        var valid = true;
+        for (var key in row) {
+            if (row[key] === null || row[key] === undefined || row[key] === "") {
+                valid = false;
+                break;
+            }
+        }
+        if (valid) {
+            cleaned.push(row);
+        }
+    }
+    return cleaned;
+}
+
+// Step 2: Label Encoding (convert soil to number)
+function labelEncode(data, column) {
+    var values = [];
+    var mapping = {};
+    var count = 0;
+
+    for (var i = 0; i < data.length; i++) {
+        var val = data[i][column];
+        if (mapping[val] === undefined) {
+            mapping[val] = count;
+            count++;
+        }
+        data[i][column] = mapping[val];
+    }
+    return data;
+}
+
+// Step 3: Prepare dataset
+var dataset = [];
+for (var i = 0; i < msg.payload.length; i++) {
+    var row = msg.payload[i];
+    dataset.push({
+        soil: row.soil,
+        soil_quality_index: Number(row.soil_quality_index),
+        yield_kg_per_hectare: Number(row.yield_kg_per_hectare),
+        organic_matter: Number(row["organic_matter_%"]),
+        ph_level: Number(row.ph_level),
+        nitrogen: Number(row["nitrogen_ppm"]),
+        phosphorus: Number(row["phosphorus_ppm"]),
+        potassium: Number(row["potassium_ppm"]),
+        moisture: Number(row["moisture_%"]),
+        temperature: Number(row["temperature_C"])
+    });
+}
+
+dataset = cleanData(dataset);
+dataset = labelEncode(dataset, "soil");
+
+// Step 4: Initialize centroids
+function initCentroids(data, k) {
+    var centroids = [];
+    var used = {};
+
+    while (centroids.length < k) {
+        var index = Math.floor(Math.random() * data.length);
+        if (!used[index]) {
+            centroids.push(JSON.parse(JSON.stringify(data[index])));
+            used[index] = true;
+        }
+    }
+    return centroids;
+}
+
+// Step 5: Calculate distance
+function distance(a, b) {
+    var sum = 0;
+    for (var key in a) {
+        if (key !== "cluster") {
+            sum += Math.pow(a[key] - b[key], 2);
+        }
+    }
+    return Math.sqrt(sum);
+}
+
+// Step 6: Assign clusters
+function assign(data, centroids) {
+    for (var i = 0; i < data.length; i++) {
+        var minDist = Infinity;
+        var cluster = -1;
+        for (var j = 0; j < centroids.length; j++) {
+            var dist = distance(data[i], centroids[j]);
+            if (dist < minDist) {
+                minDist = dist;
+                cluster = j;
+            }
+        }
+        data[i].cluster = cluster;
+    }
+    return data;
+}
+
+// Step 7: Recompute centroids
+function recompute(data, k) {
+    var sums = [];
+    var counts = [];
+    for (var i = 0; i < k; i++) {
+        sums[i] = {};
+        counts[i] = 0;
+    }
+
+    for (var i = 0; i < data.length; i++) {
+        var point = data[i];
+        var cluster = point.cluster;
+        counts[cluster]++;
+        for (var key in point) {
+            if (key !== "cluster") {
+                if (sums[cluster][key] === undefined) sums[cluster][key] = 0;
+                sums[cluster][key] += point[key];
+            }
+        }
+    }
+
+    var newCentroids = [];
+    for (var i = 0; i < k; i++) {
+        var centroid = {};
+        if (counts[i] === 0) continue;
+        for (var key in sums[i]) {
+            centroid[key] = sums[i][key] / counts[i];
+        }
+        newCentroids.push(centroid);
+    }
+
+    return newCentroids;
+}
+
+// Step 8: Run K-Means
+var centroids = initCentroids(dataset, k);
+var iter = 0;
+var same = false;
+
+while (iter < maxIterations && !same) {
+    var clustered = assign(dataset, centroids);
+    var newCentroids = recompute(clustered, k);
+
+    same = JSON.stringify(newCentroids) === JSON.stringify(centroids);
+    centroids = newCentroids;
+    iter++;
+}
+
+// Step 9: Prepare output
+var output = [];
+for (var i = 0; i < dataset.length; i++) {
+    var row = dataset[i];
+    output.push({
+        soil: row.soil,
+        soil_quality_index: row.soil_quality_index,
+        yield_kg_per_hectare: row.yield_kg_per_hectare,
+        organic_matter: row.organic_matter,
+        ph_level: row.ph_level,
+        nitrogen: row.nitrogen,
+        phosphorus: row.phosphorus,
+        potassium: row.potassium,
+        moisture: row.moisture,
+        temperature: row.temperature,
+        Cluster: row.cluster
+    });
+}
+
+msg.payload = output;
+return msg;

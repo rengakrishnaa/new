@@ -1,0 +1,237 @@
+[
+    {
+        "id": "d2641e2f3a56c4cb",
+        "type": "tab",
+        "label": "CH-01 (1)",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "926d12a0a0be7522",
+        "type": "inject",
+        "z": "d2641e2f3a56c4cb",
+        "name": "inject",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 70,
+        "y": 240,
+        "wires": [
+            [
+                "39c4c0d45b9ab730"
+            ]
+        ]
+    },
+    {
+        "id": "39c4c0d45b9ab730",
+        "type": "function",
+        "z": "d2641e2f3a56c4cb",
+        "name": "random",
+        "func": "var irValue = Math.random() < 0.3 ? 1 : 0; \nmsg.payload = irValue;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 220,
+        "y": 240,
+        "wires": [
+            [
+                "1c39391d66b41ed9"
+            ]
+        ]
+    },
+    {
+        "id": "6a374604e97b25d1",
+        "type": "function",
+        "z": "d2641e2f3a56c4cb",
+        "name": "write log",
+        "func": "let output = msg.payload.timestamp + \",\" + msg.payload.irValue + \",\" + msg.payload.count\nmsg.payload = output\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 240,
+        "wires": [
+            [
+                "f69c6250a038b736"
+            ]
+        ]
+    },
+    {
+        "id": "098e9e0c5c8158e4",
+        "type": "function",
+        "z": "d2641e2f3a56c4cb",
+        "name": "display count",
+        "func": "msg.payload = msg.payload.count\nreturn msg",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 160,
+        "wires": [
+            [
+                "d43cfeb823d6af2a",
+                "94dfa11501c661bf"
+            ]
+        ]
+    },
+    {
+        "id": "d43cfeb823d6af2a",
+        "type": "function",
+        "z": "d2641e2f3a56c4cb",
+        "name": "alert",
+        "func": "let count = msg.payload;\n\nif (count > 39) {\n    msg.payload = \"Alert: Object count has exceeded 30!\";\n    return msg;\n} else {\n    return null;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 100,
+        "wires": [
+            [
+                "30486c5057a09e32"
+            ]
+        ]
+    },
+    {
+        "id": "94dfa11501c661bf",
+        "type": "ui_text",
+        "z": "d2641e2f3a56c4cb",
+        "group": "0210958b1aaa9548",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "text",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 710,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "30486c5057a09e32",
+        "type": "ui_toast",
+        "z": "d2641e2f3a56c4cb",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "className": "",
+        "topic": "",
+        "name": "",
+        "x": 890,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "f69c6250a038b736",
+        "type": "file",
+        "z": "d2641e2f3a56c4cb",
+        "name": "write in dataset",
+        "filename": "C:\\Users\\raghu\\OneDrive\\Documents\\VIT\\Winter Semester 2024-25\\ECE3502\\Lab Assignments\\Challenging Task - 01\\ir_sensor.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 720,
+        "y": 240,
+        "wires": [
+            [
+                "1f0df05f057bce4c"
+            ]
+        ]
+    },
+    {
+        "id": "1f0df05f057bce4c",
+        "type": "debug",
+        "z": "d2641e2f3a56c4cb",
+        "name": "debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 890,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "1c39391d66b41ed9",
+        "type": "function",
+        "z": "d2641e2f3a56c4cb",
+        "name": "counter",
+        "func": "let count = context.get(\"counter\") || 0;\n\nif (msg.payload === 0) {\n    count += 1;\n    context.set(\"counter\", count);\n}\n\nlet timestamp = new Date().toISOString();\n\nlet outputData = {\n    timestamp: timestamp,\n    irValue: msg.payload,\n    count: count\n};\n\nmsg.payload = outputData;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 240,
+        "wires": [
+            [
+                "098e9e0c5c8158e4",
+                "6a374604e97b25d1"
+            ]
+        ]
+    },
+    {
+        "id": "0210958b1aaa9548",
+        "type": "ui_group",
+        "name": "Motor",
+        "tab": "0c2448ea4fd5dca7",
+        "order": 3,
+        "disp": false,
+        "width": 15,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "0c2448ea4fd5dca7",
+        "type": "ui_tab",
+        "name": "CH-01",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]

@@ -1,0 +1,9 @@
+Initialize the clusters and number of iterations
+Finding the distances
+For each iteration starting from 0	
+Calculate the distance of each point with clusterheads
+Find the min distance cluster
+Assign the point into that cluster
+Assign the cluster with cluster index
+Recalculate the new cetroids
+Generate cluster groups and assignment groups for points

@@ -1,0 +1,76 @@
+const temperatures = [22, 20, 25, 18, 30, 21, 23, 26];
+const humidities = [60, 55, 65, 50, 70, 58, 62, 68];
+
+const k = 3; // Number of clusters
+const maxIterations = 10;
+
+// Combine temperature and humidity into an array of points
+const data = temperatures.map((temp, index) => [temp, humidities[index]]);
+
+// Function to calculate Euclidean Distance
+function distance(a, b) {
+    return Math.sqrt(
+        a.reduce((sum, val, i) => sum + Math.pow(val - b[i], 2), 0)
+    );
+}
+
+// Randomly initialize centroids
+let centroids = data
+    .sort(() => 0.5 - Math.random()) // Shuffle data
+    .slice(0, k); // Select k random points
+
+let assignments = [];
+
+for (let iter = 0; iter < maxIterations; iter++) {
+    let clusters = Array.from({ length: k }, () => []);
+    assignments = [];
+
+    // Assign each point to nearest centroid
+    data.forEach(point => {
+        let distances = centroids.map(c => distance(point, c));
+        let clusterIndex = distances.indexOf(Math.min(...distances));
+        clusters[clusterIndex].push(point);
+        assignments.push({ temperature: point[0], humidity: point[1], cluster: clusterIndex });
+    });
+
+    // Recalculate centroids
+    centroids = clusters.map(cluster => {
+        let len = cluster.length;
+        if (len === 0) return [0, 0]; // Prevent NaN by setting empty clusters to [0,0]
+        let sum = cluster.reduce((acc, point) => acc.map((val, idx) => val + point[idx]), [0, 0]);
+        return sum.map(val => val / len);
+    });
+}
+
+// Generate an HTML table for display in Node-RED dashboard
+let html = `<table border='1' style='width:100%; text-align:center; border-collapse: collapse;'>
+<tr style="background-color: #f2f2f2;"><th>Temperature</th><th>Humidity</th><th>Cluster</th></tr>`;
+
+assignments.forEach(row => {
+    html += `<tr><td>${row.temperature}</td><td>${row.humidity}</td><td>${row.cluster}</td></tr>`;
+});
+
+html += `</table>`;
+
+msg.payload = { html }; // Wrap HTML in an object to avoid Angular escaping
+
+return msg;
+
+
+TEMPLATE CODE:
+<div style="text-align: center; padding: 20px;">
+    <h3>K-Means Clustering Results</h3>
+    <div style="display: flex; justify-content: center;">
+        <table border="1" style="width: 80%; text-align: center; border-collapse: collapse; font-size: 18px;">
+            <thead>
+                <tr style="background-color: #f2f2f2; height: 50px;">
+                    <th style="padding: 15px;">Temperature (°C)</th>
+                    <th style="padding: 15px;">Humidity (%)</th>
+                    <th style="padding: 15px;">Cluster</th>
+                </tr>
+            </thead>
+            <tbody ng-bind-html="msg.payload.html | trusted"></tbody>
+        </table>
+    </div>
+</div>
+ 

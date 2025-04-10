@@ -1,0 +1,202 @@
+[
+    {
+        "id": "4fff3b31e6f3eb18",
+        "type": "tab",
+        "label": "CH-01",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "0534151b0e968b47",
+        "type": "debug",
+        "z": "4fff3b31e6f3eb18",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "d8439dad092bc8d3",
+        "type": "function",
+        "z": "4fff3b31e6f3eb18",
+        "name": "random",
+        "func": "msg.payload = Math.floor(Math.random() * (300 - 10 + 1)) + 10;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 180,
+        "wires": [
+            [
+                "d07f2228e8c8fb2c"
+            ]
+        ]
+    },
+    {
+        "id": "d07f2228e8c8fb2c",
+        "type": "function",
+        "z": "4fff3b31e6f3eb18",
+        "name": "Calculate Water Level",
+        "func": "let obj = Number(msg.payload);\n\ncontext.motor = context.motor || false;\ncontext.count = context.count || 0;\n\nlet low = 25;\nlet high = 290;\n\nvar currentdate = new Date();\nvar datetime = currentdate.getDate() + \"/\"\n    + (currentdate.getMonth() + 1) + \"/\"\n    + currentdate.getFullYear() + \"@\"\n    + currentdate.getHours() + \":\"\n    + currentdate.getMinutes() + \":\"\n    + currentdate.getSeconds();\n\nif (obj <= low && context.motor === false) {\n    context.motor = true;\n    context.count += 1; \n}\n\nif (obj >= high && context.motor === true) {\n    context.motor = false;\n}\n\nlet state = context.motor ? \"ON\" : \"OFF\";\n\nmsg.payload = {\n    timestamp: datetime,\n    level: obj,\n    motor: state,\n    count: context.count\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 180,
+        "wires": [
+            [
+                "0534151b0e968b47",
+                "870004c51036745e"
+            ]
+        ]
+    },
+    {
+        "id": "b6ac48da27067312",
+        "type": "inject",
+        "z": "4fff3b31e6f3eb18",
+        "name": "inject",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 180,
+        "wires": [
+            [
+                "d8439dad092bc8d3"
+            ]
+        ]
+    },
+    {
+        "id": "870004c51036745e",
+        "type": "ui_text",
+        "z": "4fff3b31e6f3eb18",
+        "group": "0210958b1aaa9548",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Water Tank Monitor",
+        "format": "Motor: {{msg.payload.motor}} | Level: {{msg.payload.level}} | Count: {{msg.payload.count}}",
+        "layout": "col-center",
+        "className": "",
+        "style": true,
+        "font": "Century Gothic,CenturyGothic,AppleGothic,sans-serif",
+        "fontSize": "30",
+        "color": "#000000",
+        "x": 730,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "03a83c2e783e865f",
+        "type": "ui_spacer",
+        "z": "4fff3b31e6f3eb18",
+        "name": "spacer",
+        "group": "",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "707cb8af45e70d34",
+        "type": "ui_spacer",
+        "z": "4fff3b31e6f3eb18",
+        "name": "spacer",
+        "group": "0210958b1aaa9548",
+        "order": 1,
+        "width": 15,
+        "height": 1
+    },
+    {
+        "id": "4644ba3bb8406c64",
+        "type": "ui_spacer",
+        "z": "4fff3b31e6f3eb18",
+        "name": "spacer",
+        "group": "0210958b1aaa9548",
+        "order": 2,
+        "width": 15,
+        "height": 1
+    },
+    {
+        "id": "261ef4606404ea0d",
+        "type": "ui_spacer",
+        "z": "4fff3b31e6f3eb18",
+        "name": "spacer",
+        "group": "0210958b1aaa9548",
+        "order": 3,
+        "width": 15,
+        "height": 1
+    },
+    {
+        "id": "5565dc69262fc3e2",
+        "type": "ui_spacer",
+        "z": "4fff3b31e6f3eb18",
+        "name": "spacer",
+        "group": "0210958b1aaa9548",
+        "order": 5,
+        "width": 15,
+        "height": 1
+    },
+    {
+        "id": "6dfd079bb5c39426",
+        "type": "ui_spacer",
+        "z": "4fff3b31e6f3eb18",
+        "name": "spacer",
+        "group": "0210958b1aaa9548",
+        "order": 6,
+        "width": 15,
+        "height": 1
+    },
+    {
+        "id": "29a25a39f1521c09",
+        "type": "ui_spacer",
+        "z": "4fff3b31e6f3eb18",
+        "name": "spacer",
+        "group": "0210958b1aaa9548",
+        "order": 7,
+        "width": 15,
+        "height": 1
+    },
+    {
+        "id": "0210958b1aaa9548",
+        "type": "ui_group",
+        "name": "Motor",
+        "tab": "0c2448ea4fd5dca7",
+        "order": 3,
+        "disp": false,
+        "width": 15,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "0c2448ea4fd5dca7",
+        "type": "ui_tab",
+        "name": "CH-01",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]

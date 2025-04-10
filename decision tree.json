@@ -1,0 +1,158 @@
+[
+    {
+        "id": "3fd3803374f3fd50",
+        "type": "tab",
+        "label": "Decision Tree",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "399a8a022e9d781c",
+        "type": "inject",
+        "z": "3fd3803374f3fd50",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 120,
+        "wires": [
+            [
+                "e4030d8215579a17"
+            ]
+        ]
+    },
+    {
+        "id": "e4030d8215579a17",
+        "type": "file in",
+        "z": "3fd3803374f3fd50",
+        "name": "read dataset",
+        "filename": "C:\\Users\\raghu\\Downloads\\dt_dataset.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 290,
+        "y": 120,
+        "wires": [
+            [
+                "94335b47a0981197"
+            ]
+        ]
+    },
+    {
+        "id": "94335b47a0981197",
+        "type": "csv",
+        "z": "3fd3803374f3fd50",
+        "name": "",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "mult",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 450,
+        "y": 120,
+        "wires": [
+            [
+                "9fab994fb4520d67",
+                "0ed393ac66f9d68b"
+            ]
+        ]
+    },
+    {
+        "id": "9fab994fb4520d67",
+        "type": "function",
+        "z": "3fd3803374f3fd50",
+        "name": "gini",
+        "func": "function giniIndex(groups, classes) {\n    let totalInstances = groups.reduce((sum, group) => sum + group.length, 0);\n    let gini = 0.0;\n\n    groups.forEach(group => {\n        let size = group.length;\n        if (size === 0) return;\n\n        let score = 0.0;\n        classes.forEach(classVal => {\n            let proportion = group.filter(row => row['Decision'] === classVal).length / size;\n            score += proportion * proportion;\n        });\n\n        gini += (1 - score) * (size / totalInstances);\n    });\n\n    return gini;\n}\n\nfunction overallGini(dataset, classValues) {\n    let groups = [dataset];\n    return giniIndex(groups, classValues);\n}\n\nfunction splitDataset(dataset, attribute, value) {\n    let left = dataset.filter(row => row[attribute] === value);\n    let right = dataset.filter(row => row[attribute] !== value);\n    return [left, right];\n}\n\n\nfunction getBestSplit(dataset) {\n    let attributes = Object.keys(dataset[0]).filter(attr => attr !== 'Decision');\n    let classValues = [...new Set(dataset.map(row => row['Decision']))];\n    let bestGini = 1;\n    let bestSplit = {};\n    let columnGinis = {};\n\n    attributes.forEach(attribute => {\n        let uniqueValues = [...new Set(dataset.map(row => row[attribute]))];\n        \n        let avgGini = 0;\n        uniqueValues.forEach(value => {\n            let [left, right] = splitDataset(dataset, attribute, value);\n            let gini = giniIndex([left, right], classValues);\n            avgGini += gini;\n            \n            if (gini < bestGini) {\n                bestGini = gini;\n                bestSplit = { attribute, value, gini, left, right };\n            }\n        });\n        columnGinis[attribute] = avgGini / uniqueValues.length;\n    });\n\n    return { bestSplit, columnGinis };\n}\n\nfunction buildTree(dataset, depth = 0) {\n    if (dataset.length === 0) {\n        return \"Leaf: No Data\";\n    }\n\n    let classValues = [...new Set(dataset.map(row => row['Decision']))];\n    if (classValues.length === 1) {\n        return `Leaf: ${classValues[0]}`;\n    }\n\n    let { bestSplit } = getBestSplit(dataset);\n    if (!bestSplit.attribute) {\n        return \"Leaf: Unable to split further\";\n    }\n\n    let [left, right] = splitDataset(dataset, bestSplit.attribute, bestSplit.value);\n    return {\n        attribute: bestSplit.attribute,\n        value: bestSplit.value,\n        gini: bestSplit.gini,\n        left: buildTree(left, depth + 1),\n        right: buildTree(right, depth + 1)\n    };\n}\n\nlet dataset = msg.payload;\nlet classValues = [...new Set(dataset.map(row => row['Decision']))];\nlet overallGiniValue = overallGini(dataset, classValues);\nlet { columnGinis } = getBestSplit(dataset);\nlet decisionTree = buildTree(dataset);\n\nmsg.payload = {\n    overallGini: overallGiniValue,\n    columnGinis: columnGinis,\n    decisionTree: decisionTree\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 590,
+        "y": 120,
+        "wires": [
+            [
+                "7a633fab10f416ca"
+            ]
+        ]
+    },
+    {
+        "id": "7a633fab10f416ca",
+        "type": "debug",
+        "z": "3fd3803374f3fd50",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 740,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "0ed393ac66f9d68b",
+        "type": "function",
+        "z": "3fd3803374f3fd50",
+        "name": "entropy",
+        "func": "function entropy(dataset, classValues) {\n    let totalInstances = dataset.length;\n    let entropyValue = 0.0;\n\n    classValues.forEach(classVal => {\n        let proportion = dataset.filter(row => row['Decision'] === classVal).length / totalInstances;\n        if (proportion > 0) {\n            entropyValue -= proportion * Math.log2(proportion);\n        }\n    });\n\n    return entropyValue;\n}\n\nfunction informationGain(parentEntropy, groups, classValues) {\n    let totalInstances = groups.reduce((sum, group) => sum + group.length, 0);\n    let weightedEntropy = 0.0;\n\n    groups.forEach(group => {\n        let size = group.length;\n        if (size === 0) return;\n\n        let groupEntropy = entropy(group, classValues);\n        weightedEntropy += (size / totalInstances) * groupEntropy;\n    });\n\n    return parentEntropy - weightedEntropy;\n}\n\nfunction splitDataset(dataset, attribute, value) {\n    let left = dataset.filter(row => row[attribute] === value);\n    let right = dataset.filter(row => row[attribute] !== value);\n    return [left, right];\n}\n\nfunction getBestSplit(dataset) {\n    let attributes = Object.keys(dataset[0]).filter(attr => attr !== 'Decision');\n    let classValues = [...new Set(dataset.map(row => row['Decision']))];\n    let parentEntropy = entropy(dataset, classValues);\n    let bestGain = -1;\n    let bestSplit = {};\n    let columnGains = {};\n\n    attributes.forEach(attribute => {\n        let uniqueValues = [...new Set(dataset.map(row => row[attribute]))];\n        let avgGain = 0;\n\n        uniqueValues.forEach(value => {\n            let [left, right] = splitDataset(dataset, attribute, value);\n            let gain = informationGain(parentEntropy, [left, right], classValues);\n            avgGain += gain;\n\n            if (gain > bestGain) {\n                bestGain = gain;\n                bestSplit = { attribute, value, gain, left, right };\n            }\n        });\n        columnGains[attribute] = avgGain / uniqueValues.length;\n    });\n\n    return { bestSplit, columnGains };\n}\n\nfunction buildTree(dataset, depth = 0) {\n    if (dataset.length === 0) {\n        return \"Leaf: No Data\";\n    }\n\n    let classValues = [...new Set(dataset.map(row => row['Decision']))];\n    if (classValues.length === 1) {\n        return `Leaf: ${classValues[0]}`;\n    }\n\n    let { bestSplit } = getBestSplit(dataset);\n    if (!bestSplit.attribute) {\n        return \"Leaf: Unable to split further\";\n    }\n\n    let [left, right] = splitDataset(dataset, bestSplit.attribute, bestSplit.value);\n    return {\n        attribute: bestSplit.attribute,\n        value: bestSplit.value,\n        gain: bestSplit.gain,\n        left: buildTree(left, depth + 1),\n        right: buildTree(right, depth + 1)\n    };\n}\n\nlet dataset = msg.payload;\nlet classValues = [...new Set(dataset.map(row => row['Decision']))];\nlet parentEntropy = entropy(dataset, classValues);\nlet { columnGains } = getBestSplit(dataset);\nlet decisionTree = buildTree(dataset);\n\nmsg.payload = {\n    parentEntropy: parentEntropy,\n    columnGains: columnGains,\n    decisionTree: decisionTree\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 200,
+        "wires": [
+            [
+                "f4695a8357216c8a"
+            ]
+        ]
+    },
+    {
+        "id": "f4695a8357216c8a",
+        "type": "debug",
+        "z": "3fd3803374f3fd50",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 760,
+        "y": 200,
+        "wires": []
+    }
+]
